@@ -8,10 +8,10 @@ namespace Shop.Kafka.Consumer;
 
 public class PaymentCheckWorker : BackgroundService
 {
-    private readonly IKafkaConsumer<PaymentRequestMessage> _kafkaConsumer;
+    private readonly IKafkaConsumer<PaymentCheckRequestMessage> _kafkaConsumer;
     private readonly IOrderRepository _orderRepository;
 
-    public PaymentCheckWorker(IKafkaConsumer<PaymentRequestMessage> kafkaConsumer, IOrderRepository orderRepository)
+    public PaymentCheckWorker(IKafkaConsumer<PaymentCheckRequestMessage> kafkaConsumer, IOrderRepository orderRepository)
     {
         _kafkaConsumer = kafkaConsumer;
         _orderRepository = orderRepository;

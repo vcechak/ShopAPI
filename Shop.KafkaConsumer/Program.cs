@@ -32,7 +32,7 @@ builder.Services.AddSingleton<ConsumerConfig>(new ConsumerConfig
     AutoOffsetReset = AutoOffsetReset.Earliest
 });
 
-builder.Services.AddSingleton<IKafkaConsumer<PaymentRequestMessage>, KafkaConsumer<PaymentRequestMessage>>();
+builder.Services.AddSingleton<IKafkaConsumer<PaymentCheckRequestMessage>, KafkaConsumer<PaymentCheckRequestMessage>>();
 
 // Register IOrderRepository as Scoped
 builder.Services.AddDbContext<ShopDbContext>(options =>

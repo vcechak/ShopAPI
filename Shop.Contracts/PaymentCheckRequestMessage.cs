@@ -2,7 +2,7 @@
 
 namespace Shop.Contracts;
 
-public class PaymentRequestMessage
+public class PaymentCheckRequestMessage
 {
     [Required]
     public Guid OrderNumber { get; set; } = default!;

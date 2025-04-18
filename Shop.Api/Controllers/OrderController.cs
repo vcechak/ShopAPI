@@ -10,29 +10,29 @@ namespace Shop.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 public class OrderController(
-    IKafkaProducer<PaymentRequestMessage> kafkaProducer,
+    IKafkaProducer<PaymentCheckRequestMessage> kafkaProducer,
     ShopDbContext dbContext) : ControllerBase
 {
-    private readonly IKafkaProducer<PaymentRequestMessage> _kafkaProducer = kafkaProducer;
+    private readonly IKafkaProducer<PaymentCheckRequestMessage> _kafkaProducer = kafkaProducer;
     private readonly ShopDbContext _dbContext = dbContext;
 
     [HttpGet]
-    public IActionResult GetOrders()
+    public async Task<IActionResult> GetOrdersAsync()
     {
-        var orders = _dbContext.Orders.ToList();
+        var orders = await _dbContext.Orders.ToListAsync();
         return Ok(orders);
     }
 
     [HttpGet("{id}")]
-    public IActionResult GetOrder(Guid id)
+    public async Task<IActionResult> GetOrderAsync(Guid id)
     {
-        var order = _dbContext.Orders
+        var order = await _dbContext.Orders
             .Include(o => o.OrderItems)
-            .FirstOrDefault(o => o.Id == id);
+            .FirstOrDefaultAsync(o => o.Id == id);
 
         if (order == null)
         {
-            return new NotFoundResult();
+            return NotFound();
         }
 
         return Ok(order);
@@ -41,18 +41,13 @@ public class OrderController(
     [HttpPost]
     public async Task<IActionResult> CreateOrderAsync([FromBody] Order order)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
         _dbContext.Orders.Add(order);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         var total = order.OrderItems.Sum(i => i.Quantity * i.Price);
 
-        // Send to Kafka
-        var message = new PaymentRequestMessage
+        // Send payment check request:
+        var message = new PaymentCheckRequestMessage
         {
             OrderNumber = order.Id,
             TotalAmount = total
@@ -60,28 +55,26 @@ public class OrderController(
 
         await _kafkaProducer.ProduceAsync("payments", message, order.Id);
 
-        return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+        return CreatedAtAction(nameof(GetOrderAsync), new { id = order.Id }, order);
     }
 
-
-    // Help endpoints
     [HttpDelete]
-    public IActionResult DeleteAllOrders()
+    public async Task<IActionResult> DeleteAllOrdersAsync()
     {
-        var orders = _dbContext.Orders.ToList();
+        var orders = await _dbContext.Orders.ToListAsync();
         if (orders.Count == 0)
         {
             return NoContent();
         }
         _dbContext.Orders.RemoveRange(orders);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         return Ok("All orders deleted successfully.");
     }
 
     [HttpGet("orderItems")]
-    public IActionResult GetOrderItems()
+    public async Task<IActionResult> GetOrderItemsAsync()
     {
-        var orderItems = _dbContext.OrderItems.ToList();
+        var orderItems = await _dbContext.OrderItems.ToListAsync();
         return Ok(orderItems);
     }
 }
