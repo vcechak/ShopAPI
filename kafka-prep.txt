@@ -1,0 +1,13 @@
+1. run kafka: docker-compose up -d
+
+2. get kafka container id "docker ps" // also should be visible in docker desktop
+
+3. Create TOPIC PAYMENTS IN KAFKA
+	"docker exec -it <kafka-container-id> kafka-topics --create \ --topic payments --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1"
+
+// Prerequisities, DOCKER
+// NUGET PACKAGE:
+// dotnet add package Confluent.Kafka
+
+// docker-compose down -decomposdockere dockeru, removal existujících
+// docker-compose up -d - vytvoøení dockeru
