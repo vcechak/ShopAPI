@@ -9,9 +9,11 @@ using Shop.Kafka.Messaging.Interfaces;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Register PaymentCheckWorker as Scoped
-builder.Services.AddScoped<PaymentCheckWorker>();
+// -------------------------------
+// Configuration
+// -------------------------------
 
+// Get Order API Base URL
 var orderApiBaseUrl = Environment.GetEnvironmentVariable("OrderApiBaseUrl")
                       ?? builder.Configuration["ApiSettings:OrderApiBaseUrl"];
 
@@ -20,31 +22,52 @@ if (string.IsNullOrEmpty(orderApiBaseUrl))
     throw new InvalidOperationException("OrderApiBaseUrl is not configured.");
 }
 
+// -------------------------------
+// Service Registration
+// -------------------------------
+
+// Register PaymentCheckWorker as Scoped
+builder.Services.AddScoped<PaymentCheckWorker>();
+
+// Register HttpClient for Order API
 builder.Services.AddHttpClient("OrderApi", client =>
 {
     client.BaseAddress = new Uri(orderApiBaseUrl);
 });
 
-builder.Services.AddSingleton<ConsumerConfig>(new ConsumerConfig
+// Kafka Consumer
+builder.Services.AddSingleton(new ConsumerConfig
 {
     BootstrapServers = "localhost:9092",
     GroupId = "payment-group",
     AutoOffsetReset = AutoOffsetReset.Earliest
 });
-
 builder.Services.AddSingleton<IKafkaConsumer<PaymentCheckRequestMessage>, KafkaConsumer<PaymentCheckRequestMessage>>();
 
-// Register IOrderRepository as Scoped
-builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlite("Data Source=../Shop.db")); // You can change the file name
-builder.Services.AddScoped<ShopDbContext, ShopDbContext>();
-builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+// Database Configuration
+builder.Services
+    .AddDbContext<ShopDbContext>(options =>
+        options.UseSqlite("Data Source=../Shop.db"))
+    .AddScoped<ShopDbContext>()
+    .AddScoped<IOrderRepository, OrderRepository>();
 
+// -------------------------------
+// Build Host
+// -------------------------------
 var host = builder.Build();
 
-// Manually start the scoped worker
-using var scope = host.Services.CreateScope();
-var worker = scope.ServiceProvider.GetRequiredService<PaymentCheckWorker>();
-await worker.StartAsync(CancellationToken.None);
+// -------------------------------
+// Start Worker
+// -------------------------------
+
+using (var scope = host.Services.CreateScope())
+{
+    var worker = scope.ServiceProvider.GetRequiredService<PaymentCheckWorker>();
+    await worker.StartAsync(CancellationToken.None);
+}
+
+// -------------------------------
+// Run Application
+// -------------------------------
 
 host.Run();

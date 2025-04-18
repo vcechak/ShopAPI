@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Shop.Api.DTO;
+using Shop.Api.Mappers;
+using Shop.Api.Services;
 using Shop.Contracts;
 using Shop.DataAccess.Data;
 using Shop.DataAccess.Models;
@@ -11,10 +14,12 @@ namespace Shop.Api.Controllers;
 [Route("api/[controller]")]
 public class OrderController(
     IKafkaProducer<PaymentCheckRequestMessage> kafkaProducer,
-    ShopDbContext dbContext) : ControllerBase
+    ShopDbContext dbContext,
+    IOrderNumberGenerator orderNumberGenerator) : ControllerBase
 {
     private readonly IKafkaProducer<PaymentCheckRequestMessage> _kafkaProducer = kafkaProducer;
     private readonly ShopDbContext _dbContext = dbContext;
+    private readonly IOrderNumberGenerator _orderNumberGenerator = orderNumberGenerator;
 
     [HttpGet]
     public async Task<IActionResult> GetOrdersAsync()
@@ -39,8 +44,11 @@ public class OrderController(
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateOrderAsync([FromBody] Order order)
+    public async Task<IActionResult> CreateOrderAsync([FromBody] NewOrderRequest newOrderRequest)
     {
+        var orderNumber = await _orderNumberGenerator.GenerateOrderNumberAsync();
+        var order = newOrderRequest.ToOrder(orderNumber);
+
         _dbContext.Orders.Add(order);
         await _dbContext.SaveChangesAsync();
 
@@ -55,7 +63,7 @@ public class OrderController(
 
         await _kafkaProducer.ProduceAsync("payments", message, order.Id);
 
-        return CreatedAtAction(nameof(GetOrderAsync), new { id = order.Id }, order);
+        return StatusCode(StatusCodes.Status201Created, order);
     }
 
     [HttpDelete]

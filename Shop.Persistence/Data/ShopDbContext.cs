@@ -11,4 +11,6 @@ public class ShopDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
 
     public DbSet<OrderItem> OrderItems { get; set; }
+
+    public DbSet<OrderNumberSequence> OrderNumberSequences { get; set; }
 }

@@ -25,7 +25,7 @@ public class PaymentCheckWorker : BackgroundService
         {
             Console.WriteLine($"Processing payment for order: {message.OrderNumber}");
 
-            // Simulate payment result
+            // Simulate payment result we would get from bank api
             var isPaid = new Random().Next(0, 2) == 1; 
             var status = isPaid ? OrderState.Paid : OrderState.Cancelled;
 

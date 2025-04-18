@@ -3,44 +3,74 @@ using Microsoft.EntityFrameworkCore;
 using Shop.Kafka.Messaging.Interfaces;
 using Shop.Kafka.Messaging;
 using Shop.DataAccess.Data;
+using Shop.DataAccess.Models;
+using Shop.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// -------------------------------
+// Configure Services
+// -------------------------------
+
+// Controllers
 builder.Services.AddControllers();
+
+// Database
 builder.Services.AddDbContext<ShopDbContext>(options =>
-    options.UseSqlite("Data Source=../Shop.db")); // You can change the file name
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+    options.UseSqlite("Data Source=../Shop.db")); // Change path if needed
+
+// Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Kafka
-builder.Services.AddSingleton<ProducerConfig>(new ProducerConfig
+builder.Services.AddSingleton(new ProducerConfig
 {
     BootstrapServers = "localhost:9092"
 });
-
 builder.Services.AddScoped(typeof(IKafkaProducer<>), typeof(KafkaProducer<>));
+
+// Other Services
+builder.Services.AddScoped<IOrderNumberGenerator, OrderNumberGenerator>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// -------------------------------
+// Configure Middleware
+// -------------------------------
+
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app
+        .UseSwagger()
+        .UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
+
+// -------------------------------
+// Ensure DB Initialization
+// -------------------------------
 
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ShopDbContext>();
-    db.Database.EnsureCreated();
+
+    if (db.Database.EnsureCreated())
+    {
+        db.Add(new OrderNumberSequence
+        {
+            Date = DateTime.UtcNow.Date,
+            Counter = 0
+        });
+        db.SaveChanges();
+    }
 }
+
+// -------------------------------
+// Run the Application
+// -------------------------------
 
 app.Run();
