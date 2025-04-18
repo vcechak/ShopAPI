@@ -13,6 +13,7 @@ namespace Shop.Api.Services
             _shopDbContext = shopDbContext;
         }
 
+        // Note - solution picked for SQLLite, for SQL I would pick a Sequence approach in db
         public async Task<string> GenerateOrderNumberAsync()
         {
             var today = DateTime.UtcNow.Date;
