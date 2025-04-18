@@ -16,7 +16,6 @@ public class AtLeastOneRequired : ValidationAttribute
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
         var type = validationContext.ObjectType;
-        var values = new List<string>();
 
         foreach (var propName in _propertyNames)
         {
@@ -27,15 +26,13 @@ public class AtLeastOneRequired : ValidationAttribute
             }
 
             var propValue = prop.GetValue(validationContext.ObjectInstance) as string;
-            values.Add(propValue);
+            if (!string.IsNullOrEmpty(propValue))
+            {
+                return ValidationResult.Success;
+            }
         }
 
-        if (values.All(string.IsNullOrWhiteSpace))
-        {
-            var joinedNames = string.Join(", ", _propertyNames);
-            return new ValidationResult(ErrorMessage ?? $"At least one of the following must be provided: {joinedNames}.");
-        }
-
-        return ValidationResult.Success;
+        var joinedNames = string.Join(", ", _propertyNames);
+        return new ValidationResult(ErrorMessage ?? $"At least one of the following must be provided: {joinedNames}.");
     }
 }
