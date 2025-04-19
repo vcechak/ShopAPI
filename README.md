@@ -1,11 +1,33 @@
-Prerequisities, DOCKER Desktop
+# Docker Instructions
 
-"docker-compose up -d" -> Docker composition "docker-compose down" -> Docker decomposion (for restart) "docker ps" -> information regarding containers in docker
+## Prerequisites
+- **DOCKER Desktop** installed.
 
-SETUP:
+## Common Docker Commands
+- `docker-compose up -d` → Start Docker composition.
+- `docker-compose down` → Stop Docker composition (useful for restarts).
+- `docker ps` → View information about running containers in Docker.
 
-run kafka: "docker-compose up -d" in terminal, root Shop folder (where is located docker-compose.yml)
+---
 
-get kafka container id "docker ps" // also should be visible in docker desktop
+## **1st Start**
 
-Create TOPIC PAYMENTS IN KAFKA "docker exec -it kafka-topics --create \ --topic payments --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1"
+1. **Run Kafka**  
+   Execute the following command in the terminal from the root Shop folder (where `docker-compose.yml` is located):
+   
+   "docker-compose up -d"
+
+3. **Get Kafka Container ID**  
+   Use the following command to retrieve the Kafka container ID:  
+
+   "docker ps"
+
+   Alternatively, you can view the container in Docker Desktop.
+
+3. **Create Kafka Topic: PAYMENTS**  
+   Run the following command to create the `payments` topic in Kafka, replace kafka-container-id:
+
+   "docker exec -it **kafka-container-id** kafka-topics --create \ --topic payments --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1"
+
+## **Afterwards**
+  You can start the desired containers directly in Docker Desktop.
