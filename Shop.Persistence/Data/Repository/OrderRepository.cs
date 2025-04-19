@@ -25,6 +25,6 @@ public class OrderRepository : IOrderRepository
         order.OrderState = newStatus;
         var response = await _shopDbContext.SaveChangesAsync();
 
-        return response == 1 ? true : false;
+        return response == 1;
     }
 }

@@ -18,6 +18,11 @@ public class KafkaProducer<T>(ProducerConfig config) : IKafkaProducer<T>
                 Key = key.ToString(),
                 Value = value 
             });
-        Console.WriteLine($"Message produced to topic {result.TopicPartitionOffset}");
+        if(result.Status == PersistenceStatus.Persisted)
+        {
+            Console.WriteLine($"Message {result.Message} produced to topic {result.Topic}");
+        }
+        else
+           Console.WriteLine($"Failed to produce message: {result.Message} to topic {result.Topic}");
     }
 }
