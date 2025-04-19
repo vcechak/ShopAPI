@@ -27,11 +27,7 @@
 3. **Create Kafka Topic: PAYMENTS**  
    Run the following command to create the `payments` topic in Kafka:
 
-   "docker exec -it kafka-topics --create 
-    --topic payments 
-    --bootstrap-server localhost:9092 
-    --partitions 1 
-    --replication-factor 1"
+   "docker exec -it <kafka-container-id> kafka-topics --create \ --topic payments --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1"
 
 ## **Afterwards**
   You can start the desired containers directly in Docker Desktop.
