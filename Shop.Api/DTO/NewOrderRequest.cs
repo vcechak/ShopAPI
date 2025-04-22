@@ -1,6 +1,4 @@
-﻿using Shop.Contracts.Enums;
-using Shop.DataAccess.Models;
-using Shop.DataAccess.Validation;
+﻿using Shop.DataAccess.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace Shop.Api.DTO;
