@@ -4,6 +4,8 @@ using Shop.DataAccess.Data;
 using Shop.DataAccess.Models;
 using Shop.Kafka.Messaging.Interfaces;
 using Shop.Contracts;
+using Shop.Api.Mappers;
+using Shop.Api.Services;
 
 public class OrderService : IOrderService
 {
