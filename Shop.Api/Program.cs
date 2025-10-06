@@ -31,6 +31,7 @@ builder.Services.AddSingleton(new ProducerConfig
 builder.Services.AddScoped(typeof(IKafkaProducer<>), typeof(KafkaProducer<>));
 
 // Other Services
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrderNumberGenerator, OrderNumberGenerator>();
 
 var app = builder.Build();
